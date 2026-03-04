@@ -34,10 +34,12 @@
     .card{background:var(--white);border-radius:3px;border-top:4px solid var(--navy);padding:22px 24px 20px;margin-bottom:12px;box-shadow:0 4px 24px rgba(13,43,110,.09);}
     .card.accent-green{border-top-color:var(--green);}
     .card.accent-red{border-top-color:var(--red);}
+    .card.accent-navy{border-top-color:var(--navy-light);}
     .card-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;display:flex;align-items:center;gap:10px;}
     .card-title::after{content:'';flex:1;height:1px;background:var(--border);}
     .card-title.green{color:var(--green);}
     .card-title.red{color:var(--red);}
+    .card-title.navy{color:var(--navy-light);}
     .fields-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
     .field{margin-bottom:16px;} .field:last-child{margin-bottom:0;}
     .field-inline{margin-bottom:0;}
@@ -54,17 +56,33 @@
     input.green-input:focus{border-color:var(--green);}
     input.red-input:focus{border-color:var(--red);}
     .hint{font-family:'Barlow',sans-serif;font-size:.72rem;color:var(--muted);margin-top:5px;font-style:italic;}
-    .allowance-bar-wrap{margin-top:14px;padding:12px 14px;background:#f7f9fd;border:1.5px solid var(--border);border-radius:3px;}
-    .allowance-label-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;}
+
+    /* ── Allowance panel ── */
+    .allowance-panel{display:none;}
+    .allowance-panel.show{display:block;}
+    .allowance-figures{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+    .af-item{background:#f7f9fd;border:1.5px solid var(--border);border-radius:3px;padding:10px 12px;text-align:center;}
+    .af-label{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;}
+    .af-val{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.05rem;color:var(--navy);}
+    .af-val.green{color:var(--green);}
+    .af-val.red{color:var(--red);}
+    .af-val.amber{color:var(--amber);}
+    .allowance-bar-wrap{padding:14px 16px;background:#f7f9fd;border:1.5px solid var(--border);border-radius:3px;}
+    .allowance-label-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
     .allowance-label{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600;}
-    .allowance-value{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);}
-    .bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
-    .bar-fill{height:100%;border-radius:4px;transition:width .4s ease,background .4s ease;background:var(--green);}
+    .allowance-pct{font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;color:var(--navy);}
+    .bar-track{height:10px;background:var(--border);border-radius:5px;overflow:hidden;position:relative;}
+    .bar-fill{height:100%;border-radius:5px;transition:width .45s ease,background .45s ease;background:var(--green);}
     .bar-fill.warn{background:var(--amber);}
     .bar-fill.over{background:var(--red);}
-    .allowance-sub{font-family:'Barlow',sans-serif;font-size:.72rem;color:var(--muted);margin-top:6px;font-style:italic;}
+    .bar-allowance-marker{position:absolute;top:0;right:0;width:2px;height:100%;background:var(--navy);opacity:.3;}
+    .allowance-sub{font-family:'Barlow',sans-serif;font-size:.72rem;color:var(--muted);margin-top:7px;font-style:italic;}
+
+    /* warnings */
     .warning{background:var(--amber-bg);border-left:4px solid #e8a020;padding:11px 16px;margin-bottom:12px;font-family:'Barlow',sans-serif;font-size:.87rem;color:var(--amber);display:none;border-radius:0 2px 2px 0;}
     .warning.show{display:block;}
+
+    /* results */
     .results{display:none;} .results.show{display:block;}
     .proceeds-card{background:var(--navy);border-radius:3px;padding:22px 24px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 6px 28px rgba(13,43,110,.22);}
     .proceeds-card::before{content:'';position:absolute;bottom:-40px;right:-40px;width:150px;height:150px;background:var(--navy-mid);transform:rotate(45deg);border-radius:4px;}
@@ -103,6 +121,7 @@
       .result-tile.full{grid-column:1;}
       .proceeds-breakdown{grid-template-columns:1fr 1fr;}
       .pb-divider{display:none;}
+      .allowance-figures{grid-template-columns:1fr 1fr;}
     }
   </style>
 </head>
@@ -126,7 +145,7 @@
 
   <div class="main" id="app">
 
-    <!-- Asset Details -->
+    <!-- 1. Asset Details -->
     <div class="card">
       <div class="card-title">Asset Details</div>
       <div class="field">
@@ -140,11 +159,11 @@
       <div class="field" style="margin-bottom:0">
         <label for="tgt">Target Total Net Gain This Year (2025/26)</label>
         <div class="input-wrap"><span class="prefix navy">£</span><input type="text" id="tgt" value="3000" inputmode="decimal" /></div>
-        <div class="hint">The total net gain you want across ALL disposals this year — the calculator works out how much to sell from this asset to reach it</div>
+        <div class="hint">The total net gain you want across all disposals this year — the calculator works out how much to sell from this asset to reach it</div>
       </div>
     </div>
 
-    <!-- Realised Gains -->
+    <!-- 2. Realised Gains -->
     <div class="card accent-green">
       <div class="card-title green">Realised Gains This Tax Year (2025/26)</div>
       <div class="field" style="margin-bottom:0">
@@ -152,17 +171,9 @@
         <div class="input-wrap"><span class="prefix green">£</span><input type="text" id="gains" class="green-input" value="0" inputmode="decimal" /></div>
         <div class="hint">Gains from other disposals already made — these count towards your target and the £3,000 annual allowance</div>
       </div>
-      <div class="allowance-bar-wrap" id="allowance-wrap" style="display:none">
-        <div class="allowance-label-row">
-          <span class="allowance-label">CGT Annual Allowance Used — 2025/26</span>
-          <span class="allowance-value" id="allowance-used-val">—</span>
-        </div>
-        <div class="bar-track"><div class="bar-fill" id="allowance-bar" style="width:0%"></div></div>
-        <div class="allowance-sub" id="allowance-sub">—</div>
-      </div>
     </div>
 
-    <!-- Losses -->
+    <!-- 3. Losses -->
     <div class="card accent-red">
       <div class="card-title red">Losses to Offset</div>
       <div class="fields-row">
@@ -179,11 +190,48 @@
       </div>
     </div>
 
+    <!-- 4. CGT Allowance Status (new standalone panel) -->
+    <div class="card accent-navy" id="allowance-card" style="display:none">
+      <div class="card-title navy">CGT Annual Allowance Status — 2025/26</div>
+      <div class="allowance-panel show" id="allowance-panel">
+
+        <!-- Three-figure summary -->
+        <div class="allowance-figures">
+          <div class="af-item">
+            <span class="af-label">Realised Gains</span>
+            <span class="af-val green" id="af-gains">£0.00</span>
+          </div>
+          <div class="af-item">
+            <span class="af-label">Less Total Losses</span>
+            <span class="af-val red" id="af-losses">£0.00</span>
+          </div>
+          <div class="af-item">
+            <span class="af-label">Net Position (Before This Disposal)</span>
+            <span class="af-val" id="af-net">£0.00</span>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="allowance-bar-wrap">
+          <div class="allowance-label-row">
+            <span class="allowance-label">Allowance Used (£3,000)</span>
+            <span class="allowance-pct" id="allowance-pct-val">0%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" id="allowance-bar" style="width:0%"></div>
+            <div class="bar-allowance-marker"></div>
+          </div>
+          <div class="allowance-sub" id="allowance-sub">—</div>
+        </div>
+
+      </div>
+    </div>
+
     <div class="warning" id="warning"></div>
 
+    <!-- 5. Results -->
     <div class="results" id="results">
 
-      <!-- Proceeds hero -->
       <div class="proceeds-card">
         <svg class="arrow-deco" width="28" height="28" viewBox="0 0 30 30" fill="none"><path d="M5 25L25 5M25 5H11M25 5V19" stroke="#4a7fd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <div class="chart-deco">
@@ -194,8 +242,6 @@
         <div class="proceeds-eyebrow">Proceeds to Cash In</div>
         <div class="proceeds-amount" id="r-proceeds">—</div>
         <div class="proceeds-detail">Sell <span class="proceeds-pct" id="r-pct">—</span> of your holding</div>
-
-        <!-- Gain breakdown strip -->
         <div class="proceeds-breakdown">
           <div class="pb-item">
             <span class="pb-label">Gross Gain on This Sale</span>
@@ -213,7 +259,6 @@
         </div>
       </div>
 
-      <!-- Result tiles -->
       <div class="grid-4">
         <div class="result-tile">
           <span class="tile-label">Total Unrealised Gain on Asset</span>
@@ -231,15 +276,11 @@
           <span class="tile-label">Remaining Value After Sale</span>
           <span class="tile-value" id="r-remaining">—</span>
         </div>
-
-        <!-- Total net gains this year -->
         <div class="result-tile full" id="tile-total-gains">
           <span class="tile-label">Total Net Gains This Year After This Disposal (2025/26)</span>
           <span class="tile-value" id="r-total-gains">—</span>
           <div class="tile-sub" id="r-total-gains-sub"></div>
         </div>
-
-        <!-- Allowance remaining -->
         <div class="result-tile full" id="tile-allowance-remaining">
           <span class="tile-label">Annual CGT Allowance Remaining After This Disposal</span>
           <span class="tile-value" id="r-allowance-remaining">—</span>
@@ -265,36 +306,65 @@
     function calculate() {
       const acq      = parse('acq');
       const cur      = parse('cur');
-      const tgt      = parse('tgt');        // TOTAL net gain wanted across all disposals this year
-      const gains    = parse('gains');      // gains already banked this year
+      const tgt      = parse('tgt');
+      const gains    = parse('gains');
       const lossesCY = parse('losses-cy');
       const lossesCF = parse('losses-cf');
       const totalLosses = lossesCY + lossesCF;
 
-      const we = document.getElementById('warning');
-      const re = document.getElementById('results');
-      const pe = document.getElementById('placeholder');
-      const aw = document.getElementById('allowance-wrap');
+      const we   = document.getElementById('warning');
+      const re   = document.getElementById('results');
+      const pe   = document.getElementById('placeholder');
+      const card = document.getElementById('allowance-card');
 
+      // ── Net position before this disposal (gains minus all losses) ──
+      const netBeforeDisposal = gains - totalLosses;
+      const allowanceUsedPct  = Math.max(0, Math.min((netBeforeDisposal / CGT_ALLOWANCE) * 100, 100));
+
+      // ── Show allowance card whenever any of the three fields have a value ──
+      const showAllowance = gains > 0 || lossesCY > 0 || lossesCF > 0;
+      card.style.display = showAllowance ? 'block' : 'none';
+
+      if (showAllowance) {
+        // Three-figure row
+        document.getElementById('af-gains').textContent  = fmt(gains);
+        document.getElementById('af-losses').textContent = fmt(totalLosses);
+        const netEl = document.getElementById('af-net');
+        netEl.textContent = fmt(netBeforeDisposal);
+        netEl.className = 'af-val ' + (netBeforeDisposal > 0 ? 'green' : netBeforeDisposal < 0 ? 'red' : '');
+
+        // Bar
+        const bar = document.getElementById('allowance-bar');
+        bar.style.width = allowanceUsedPct + '%';
+        bar.className   = 'bar-fill' + (allowanceUsedPct >= 100 ? ' over' : allowanceUsedPct >= 75 ? ' warn' : '');
+        document.getElementById('allowance-pct-val').textContent = allowanceUsedPct.toFixed(1) + '%';
+
+        // Sub-text
+        const remBefore = CGT_ALLOWANCE - netBeforeDisposal;
+        const sub = document.getElementById('allowance-sub');
+        if (netBeforeDisposal <= 0) {
+          sub.textContent = 'Net losses before this disposal — full £3,000 allowance still available';
+        } else if (remBefore > 0) {
+          sub.textContent = fmt(remBefore) + ' of allowance remaining before this disposal';
+        } else {
+          sub.textContent = 'Allowance already fully used before this disposal — ' + fmt(Math.abs(remBefore)) + ' over';
+        }
+      }
+
+      // ── Core disposal maths ──
       const totalAvailableGain = cur - acq;
-      const gainRatio = acq > 0 ? totalAvailableGain / acq : NaN;
+      const gainRatio          = acq > 0 ? totalAvailableGain / acq : NaN;
+      const netStillNeeded     = tgt - gains;          // net still needed from this disposal
+      const grossGainNeeded    = netStillNeeded + totalLosses; // gross to generate that net
 
-      // ── Key formula ──
-      // Total net gain wanted this year = tgt
-      // Already banked = gains
-      // Still needed net from this disposal = tgt - gains
-      // But losses reduce what we count, so gross needed = (tgt - gains) + totalLosses
-      const netStillNeeded  = tgt - gains;
-      const grossGainNeeded = netStillNeeded + totalLosses;
+      const pctToSell  = totalAvailableGain > 0 ? (grossGainNeeded / totalAvailableGain) * 100 : NaN;
+      const proceeds   = totalAvailableGain > 0 ? (pctToSell / 100) * cur  : NaN;
+      const appCost    = totalAvailableGain > 0 ? (pctToSell / 100) * acq  : NaN;
+      const remaining  = cur - proceeds;
 
-      const pctToSell = totalAvailableGain > 0 ? (grossGainNeeded / totalAvailableGain) * 100 : NaN;
-      const proceeds  = totalAvailableGain > 0 ? (pctToSell / 100) * cur  : NaN;
-      const appCost   = totalAvailableGain > 0 ? (pctToSell / 100) * acq  : NaN;
-      const remaining = cur - proceeds;
-
-      const grossRealised   = proceeds - appCost;   // gross gain from this disposal
-      const netFromDisposal = grossRealised - totalLosses; // net from this disposal
-      const totalNetGains   = gains + netFromDisposal;     // should equal tgt
+      const grossRealised   = proceeds - appCost;
+      const netFromDisposal = grossRealised - totalLosses;
+      const totalNetGains   = gains + netFromDisposal;
       const allowanceRem    = CGT_ALLOWANCE - totalNetGains;
 
       // ── Validation ──
@@ -307,7 +377,7 @@
       if (acq > 0 && cur <= acq) {
         warnMsg = 'Current value must exceed acquisition cost to realise a gain.';
       } else if (acq > 0 && cur > acq && gains >= tgt) {
-        warnMsg = 'Other gains already realised (' + fmt(gains) + ') already meet or exceed your target of ' + fmt(tgt) + '. No further disposal is needed to hit your target.';
+        warnMsg = 'Other gains already realised (' + fmt(gains) + ') already meet or exceed your target of ' + fmt(tgt) + '. No further disposal is needed.';
       } else if (acq > 0 && cur > acq && grossGainNeeded > totalAvailableGain) {
         warnMsg = 'Cannot reach your target from this asset alone. Gross gain needed is ' + fmt(grossGainNeeded) + ' but total available gain is only ' + fmt(totalAvailableGain) + '.';
       }
@@ -317,61 +387,43 @@
       re.classList.toggle('show', valid);
       pe.classList.toggle('hidden', valid || !!warnMsg);
 
-      // ── Allowance bar ──
-      if (gains > 0 || tgt > 0) {
-        aw.style.display = 'block';
-        const pctUsed = Math.min((gains / CGT_ALLOWANCE) * 100, 100);
-        const bar = document.getElementById('allowance-bar');
-        bar.style.width = pctUsed + '%';
-        bar.className = 'bar-fill' + (pctUsed >= 100 ? ' over' : pctUsed >= 75 ? ' warn' : '');
-        document.getElementById('allowance-used-val').textContent = fmt(gains) + ' of \u00a33,000';
-        const rem = CGT_ALLOWANCE - gains;
-        document.getElementById('allowance-sub').textContent = rem > 0
-          ? fmt(rem) + ' of allowance remaining before this disposal'
-          : 'Annual allowance already fully used before this disposal';
-      } else {
-        aw.style.display = 'none';
-      }
-
       if (!valid) return;
 
       // ── Populate results ──
       document.getElementById('r-proceeds').textContent      = fmt(proceeds);
       document.getElementById('r-pct').textContent           = pctToSell.toFixed(4) + '%';
       document.getElementById('pb-gross').textContent        = fmt(grossRealised);
-      document.getElementById('pb-losses').textContent       = totalLosses > 0 ? fmt(totalLosses) : fmt(0);
+      document.getElementById('pb-losses').textContent       = fmt(totalLosses);
       document.getElementById('pb-net-disposal').textContent = fmt(netFromDisposal);
       document.getElementById('r-gross-gain').textContent    = fmt(totalAvailableGain);
       document.getElementById('r-gain-ratio').textContent    = (gainRatio * 100).toFixed(2) + '%';
       document.getElementById('r-app-cost').textContent      = fmt(appCost);
       document.getElementById('r-remaining').textContent     = fmt(remaining);
 
-      // Total net gains tile
       const totalEl   = document.getElementById('r-total-gains');
       const totalTile = document.getElementById('tile-total-gains');
       const totalSub  = document.getElementById('r-total-gains-sub');
       totalEl.textContent = fmt(totalNetGains);
       if (totalNetGains > CGT_ALLOWANCE) {
-        totalEl.className = 'tile-value red';
+        totalEl.className  = 'tile-value red';
         totalTile.className = 'result-tile full highlight-red';
         totalSub.textContent = fmt(totalNetGains - CGT_ALLOWANCE) + ' above the annual allowance \u2014 CGT may be payable on the excess';
       } else {
-        totalEl.className = 'tile-value green';
+        totalEl.className  = 'tile-value green';
         totalTile.className = 'result-tile full highlight-green';
         totalSub.textContent = fmt(CGT_ALLOWANCE - totalNetGains) + ' within the annual allowance';
       }
 
-      // Allowance remaining tile
       const remEl   = document.getElementById('r-allowance-remaining');
       const remTile = document.getElementById('tile-allowance-remaining');
       if (allowanceRem >= 0) {
-        remEl.textContent = fmt(allowanceRem);
-        remEl.className = 'tile-value green';
-        remTile.className = 'result-tile full highlight-green';
+        remEl.textContent  = fmt(allowanceRem);
+        remEl.className    = 'tile-value green';
+        remTile.className  = 'result-tile full highlight-green';
       } else {
-        remEl.textContent = fmt(Math.abs(allowanceRem)) + ' over allowance';
-        remEl.className = 'tile-value red';
-        remTile.className = 'result-tile full highlight-red';
+        remEl.textContent  = fmt(Math.abs(allowanceRem)) + ' over allowance';
+        remEl.className    = 'tile-value red';
+        remTile.className  = 'result-tile full highlight-red';
       }
     }
 
