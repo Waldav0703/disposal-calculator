@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capital Managers - Disposal Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#0d2b6e; --navy-mid:#1a3f9f; --navy-light:#2d5be3; --accent:#4a7fd4; --bg:#f0f2f7; --white:#ffffff; --muted:#6b80a8; --border:#c8d4ec; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{min-height:100vh;background:var(--bg);font-family:'Barlow',sans-serif;display:flex;flex-direction:column;align-items:center;position:relative;overflow-x:hidden;}
+    .bg-shapes{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+    .bg-block{position:absolute;bottom:-100px;left:-100px;width:500px;height:500px;background:var(--navy);transform:rotate(45deg);}
+    .bg-l1{position:absolute;bottom:200px;left:-30px;width:520px;height:2px;background:var(--accent);opacity:.25;transform:rotate(-35deg);}
+    .bg-l2{position:absolute;bottom:310px;left:40px;width:420px;height:1.5px;background:var(--navy-light);opacity:.18;transform:rotate(-35deg);}
+    .bg-l3{position:absolute;bottom:100px;right:-60px;width:420px;height:2px;background:var(--accent);opacity:.15;transform:rotate(35deg);}
+    .bg-l4{position:absolute;bottom:190px;right:-10px;width:360px;height:1.5px;background:var(--navy-mid);opacity:.12;transform:rotate(35deg);}
+    .brand-bar{width:100%;background:var(--navy);padding:20px 36px 18px;position:relative;z-index:10;clip-path:polygon(0 0,100% 0,100% 78%,97% 100%,0 100%);}
+    .brand-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.5rem;color:var(--white);letter-spacing:.09em;text-transform:uppercase;line-height:1;}
+    .brand-sub{font-family:'Barlow Condensed',sans-serif;font-weight:400;font-size:.78rem;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;margin-top:4px;}
+    .page-title-block{text-align:center;padding:34px 20px 24px;position:relative;z-index:10;}
+    .page-tag{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.67rem;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);background:rgba(74,127,212,.1);border:1px solid var(--border);padding:4px 14px;border-radius:2px;margin-bottom:12px;}
+    h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:2.3rem;color:var(--navy);letter-spacing:.07em;text-transform:uppercase;}
+    .title-rule{width:52px;height:3px;background:var(--navy-light);margin:13px auto 0;}
+    .main{width:100%;max-width:580px;padding:0 20px 70px;position:relative;z-index:10;opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease;}
+    .main.visible{opacity:1;transform:translateY(0);}
+    .input-card{background:var(--white);border-radius:3px;border-top:4px solid var(--navy);padding:26px 26px 22px;margin-bottom:14px;box-shadow:0 4px 24px rgba(13,43,110,.10);}
+    .card-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+    .card-title::after{content:'';flex:1;height:1px;background:var(--border);}
+    .field{margin-bottom:20px;} .field:last-child{margin-bottom:0;}
+    label{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--navy);display:block;margin-bottom:7px;}
+    .input-wrap{position:relative;display:flex;align-items:stretch;}
+    .pound-prefix{background:var(--navy);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.05rem;padding:10px 14px;border-radius:2px 0 0 2px;flex-shrink:0;display:flex;align-items:center;}
+    input[type=text]{font-family:'Barlow',sans-serif;font-weight:500;font-size:1.18rem;background:#f7f9fd;border:1.5px solid var(--border);border-left:none;color:var(--navy);width:100%;padding:10px 14px;outline:none;border-radius:0 2px 2px 0;transition:border-color .2s,background .2s;}
+    input[type=text]:focus{border-color:var(--navy-light);background:var(--white);}
+    .warning{background:#fff8e6;border-left:4px solid #e8a020;padding:11px 16px;margin-bottom:14px;font-family:'Barlow',sans-serif;font-size:.88rem;color:#7a4f10;display:none;border-radius:0 2px 2px 0;}
+    .warning.show{display:block;}
+    .results{display:none;} .results.show{display:block;}
+    .proceeds-card{background:var(--navy);border-radius:3px;padding:24px 26px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 6px 28px rgba(13,43,110,.22);}
+    .proceeds-card::before{content:'';position:absolute;bottom:-40px;right:-40px;width:150px;height:150px;background:var(--navy-mid);transform:rotate(45deg);border-radius:4px;}
+    .proceeds-card::after{content:'';position:absolute;top:0;right:100px;width:2px;height:100%;background:var(--navy-light);opacity:.3;transform:skewX(-12deg);}
+    .proceeds-eyebrow{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.63rem;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;margin-bottom:6px;position:relative;z-index:1;}
+    .proceeds-amount{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:2.8rem;color:var(--white);letter-spacing:.02em;line-height:1;position:relative;z-index:1;}
+    .proceeds-detail{margin-top:8px;font-family:'Barlow',sans-serif;font-size:.84rem;font-weight:300;color:var(--accent);letter-spacing:.04em;position:relative;z-index:1;}
+    .proceeds-pct{font-weight:600;color:#7fb3ff;}
+    .arrow-deco{position:absolute;top:20px;right:26px;z-index:2;}
+    .chart-deco{display:flex;align-items:flex-end;gap:5px;position:absolute;bottom:20px;right:26px;z-index:2;}
+    .bar{border-radius:2px 2px 0 0;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+    .result-tile{background:var(--white);border-radius:3px;border-bottom:3px solid var(--border);padding:16px 18px;box-shadow:0 2px 12px rgba(13,43,110,.07);transition:border-color .2s;}
+    .result-tile:hover{border-bottom-color:var(--navy-light);}
+    .tile-label{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;}
+    .tile-value{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.3rem;color:var(--navy);}
+    .disclaimer{text-align:center;font-family:'Barlow',sans-serif;font-size:.74rem;font-weight:300;color:var(--muted);letter-spacing:.04em;}
+    .placeholder{text-align:center;font-family:'Barlow',sans-serif;font-size:.94rem;font-weight:300;color:var(--muted);padding:20px 0;letter-spacing:.04em;}
+    .placeholder.hidden{display:none;}
+  </style>
+</head>
+<body>
+  <div class="bg-shapes">
+    <div class="bg-block"></div>
+    <div class="bg-l1"></div><div class="bg-l2"></div>
+    <div class="bg-l3"></div><div class="bg-l4"></div>
+  </div>
+  <div class="brand-bar">
+    <div class="brand-name">Capital Managers</div>
+    <div class="brand-sub">Financial Planning Limited</div>
+  </div>
+  <div class="page-title-block">
+    <div class="page-tag">Tax Planning Tool</div>
+    <h1>Disposal Calculator</h1>
+    <div class="title-rule"></div>
+  </div>
+  <div class="main" id="app">
+    <div class="input-card">
+      <div class="card-title">Enter Your Figures</div>
+      <div class="field">
+        <label for="acq">Acquisition Cost</label>
+        <div class="input-wrap"><span class="pound-prefix">£</span><input type="text" id="acq" value="10000" inputmode="decimal" /></div>
+      </div>
+      <div class="field">
+        <label for="cur">Current Market Value</label>
+        <div class="input-wrap"><span class="pound-prefix">£</span><input type="text" id="cur" value="25000" inputmode="decimal" /></div>
+      </div>
+      <div class="field">
+        <label for="tgt">Target Gain to Realise</label>
+        <div class="input-wrap"><span class="pound-prefix">£</span><input type="text" id="tgt" value="3000" inputmode="decimal" /></div>
+      </div>
+    </div>
+    <div class="warning" id="warning"></div>
+    <div class="results" id="results">
+      <div class="proceeds-card">
+        <svg class="arrow-deco" width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M5 25L25 5M25 5H11M25 5V19" stroke="#4a7fd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="chart-deco">
+          <div class="bar" style="width:9px;height:16px;background:#2d5be3;opacity:.55"></div>
+          <div class="bar" style="width:9px;height:24px;background:#4a7fd4;opacity:.65"></div>
+          <div class="bar" style="width:9px;height:33px;background:#fff;opacity:.45"></div>
+        </div>
+        <div class="proceeds-eyebrow">Proceeds to Cash In</div>
+        <div class="proceeds-amount" id="r-proceeds">-</div>
+        <div class="proceeds-detail">Sell <span class="proceeds-pct" id="r-pct">-</span> of your holding</div>
+      </div>
+      <div class="grid">
+        <div class="result-tile"><span class="tile-label">Total Available Gain</span><span class="tile-value" id="r-total-gain">-</span></div>
+        <div class="result-tile"><span class="tile-label">Gain Ratio</span><span class="tile-value" id="r-gain-ratio">-</span></div>
+        <div class="result-tile"><span class="tile-label">Apportioned Cost</span><span class="tile-value" id="r-app-cost">-</span></div>
+        <div class="result-tile"><span class="tile-label">Remaining Value</span><span class="tile-value" id="r-remaining">-</span></div>
+      </div>
+      <p class="disclaimer">For guidance only - consult a qualified tax adviser before disposing of assets.</p>
+    </div>
+    <div class="placeholder" id="placeholder">Enter your figures above to calculate your disposal.</div>
+  </div>
+  <script>
+    const fmt=n=>isFinite(n)?'£'+Number(n.toFixed(2)).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}):'--';
+    const parse=id=>parseFloat(document.getElementById(id).value.replace(/[^0-9.]/g,''))||0;
+    function calculate(){
+      const acq=parse('acq'),cur=parse('cur'),tgt=parse('tgt');
+      const we=document.getElementById('warning'),re=document.getElementById('results'),pe=document.getElementById('placeholder');
+      const tg=cur-acq,gr=acq>0?tg/acq:NaN,pts=tg>0?(tgt/tg)*100:NaN,pr=tg>0?(pts/100)*cur:NaN,ac=tg>0?(pts/100)*acq:NaN,rm=cur-pr;
+      const valid=acq>0&&cur>acq&&tgt>0&&tgt<=tg;
+      let w='';
+      if(acq>0&&cur<=acq)w='Current value must exceed acquisition cost to realise a gain.';
+      else if(acq>0&&cur>acq&&tgt>tg)w='Target gain exceeds total available gain of '+fmt(tg)+'.';
+      we.textContent=w;we.classList.toggle('show',!!w);re.classList.toggle('show',valid);pe.classList.toggle('hidden',valid||!!w);
+      if(valid){
+        document.getElementById('r-proceeds').textContent=fmt(pr);
+        document.getElementById('r-pct').textContent=pts.toFixed(4)+'%';
+        document.getElementById('r-total-gain').textContent=fmt(tg);
+        document.getElementById('r-gain-ratio').textContent=(gr*100).toFixed(2)+'%';
+        document.getElementById('r-app-cost').textContent=fmt(ac);
+        document.getElementById('r-remaining').textContent=fmt(rm);
+      }
+    }
+    ['acq','cur','tgt'].forEach(id=>document.getElementById(id).addEventListener('input',calculate));
+    window.addEventListener('load',()=>{setTimeout(()=>document.getElementById('app').classList.add('visible'),100);calculate();});
+  </script>
+</body>
+</html>
